@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('user.layout')
 @section('title', 'Rekomendasi Kost Cerdas')
 @section('meta_desc', 'Dapatkan rekomendasi kost terbaik menggunakan Content-Based Filtering, Cosine Similarity dan Haversine Formula.')
 @push('styles')
@@ -19,18 +19,28 @@
 .form-select { background:#F1F5F9; border:1px solid #E2E8F0; border-radius:10px; padding:.75rem 1rem; color:#0F172A; font-family:inherit; font-size:.9rem; cursor:pointer; }
 .form-select:focus { outline:none; border-color: var(--primary); }
 .fasilitas-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:.75rem; }
-.fasilitas-check { display:flex; align-items:center; gap:.75rem; background:#F1F5F9; border:1px solid #E2E8F0; border-radius:10px; padding:.75rem 1rem; cursor:pointer; transition:all .2s; }
-.fasilitas-check:hover { border-color: var(--primary); background: var(--primary-light); }
+.fasilitas-check { display:flex; align-items:center; gap:.75rem; background:#F1F5F9; border:2px solid #E2E8F0; border-radius:12px; padding:.8rem 1rem; cursor:pointer; transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.fasilitas-check:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.fasilitas-check:active { transform: scale(0.95); }
 .fasilitas-check input[type=checkbox] { display:none; }
-.fasilitas-check .check-box { width:20px; height:20px; border-radius:6px; border:2px solid #E2E8F0; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .2s; }
-.fasilitas-check input:checked ~ .check-box, .fasilitas-check.checked .check-box { background: var(--primary); border-color: var(--primary); }
-.fasilitas-check.checked { border-color: var(--primary); background: var(--primary-light); }
-.fasilitas-check-label { font-size:.85rem; font-weight:500; color:#475569; display:flex; align-items:center; gap:.4rem; }
+.fasilitas-check .check-box { width:22px; height:22px; border-radius:6px; border:2px solid #CBD5E1; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .2s; }
+.fasilitas-check input:checked ~ .check-box, .fasilitas-check.checked .check-box { background: var(--primary); border-color: var(--primary); transform: scale(1.1) rotate(5deg); }
+.fasilitas-check.checked { border-color: var(--primary); background: var(--primary-light); box-shadow: 0 4px 10px rgba(50,31,219,0.15); transform: translateY(-2px); }
+.fasilitas-check-label { font-size:.9rem; font-weight:600; color:#475569; display:flex; align-items:center; gap:.5rem; }
 .btn-submit { width:100%; padding:1rem; font-size:1rem; font-weight:700; border-radius:12px; }
 .algo-info { background: var(--primary-light); border:1px solid var(--border-color); border-radius:16px; padding:1.5rem; margin-top:2rem; }
 .algo-info-title { font-weight:700; color: var(--primary); margin-bottom:.75rem; display:flex; align-items:center; gap:.5rem; }
 .algo-formula { background: var(--bg-white); border: 1px dashed var(--primary); border-radius:10px; padding:1rem; margin-top:.75rem; font-family:monospace; font-size:.85rem; color: var(--text-main); text-align:center; }
 @media(max-width:600px) { .form-grid { grid-template-columns:1fr; } .rekom-hero h1 { font-size:1.8rem; } }
+
+/* AI Loading Overlay */
+#ai-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; color: #fff; }
+.ai-spinner { width: 80px; height: 80px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 2rem; position: relative; }
+.ai-spinner::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: var(--primary); opacity: 0.2; border-radius: 50%; animation: pulse 1s infinite alternate; }
+.ai-text { font-size: 1.5rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem; }
+.ai-subtext { font-size: 1rem; color: #94a3b8; font-family: monospace; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes pulse { 0% { transform: translate(-50%, -50%) scale(1); } 100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; } }
 </style>
 @endpush
 
@@ -140,6 +150,13 @@
         <p style="color:#64748B;font-size:.8rem;margin-top:.75rem;">Di mana A = vektor preferensi fasilitas Anda, dan B = vektor fasilitas kost. Skor akhir merupakan kombinasi berbobot: Harga (30%) + Fasilitas (35%) + Jarak (20%) + Rating (15%).</p>
     </div>
 </div>
+
+<!-- AI LOADING OVERLAY -->
+<div id="ai-overlay">
+    <div class="ai-spinner"></div>
+    <div class="ai-text">Kecerdasan Buatan Sedang Bekerja...</div>
+    <div class="ai-subtext" id="ai-status">Menganalisis matriks Cosine Similarity...</div>
+</div>
 @endsection
 
 @push('styles')
@@ -200,5 +217,18 @@ function toggleCheck(lblId) {
         if (ico) ico.style.display = 'none';
     }
 }
+
+document.getElementById('prefForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const overlay = document.getElementById('ai-overlay');
+    const status = document.getElementById('ai-status');
+    const form = this;
+    
+    overlay.style.display = 'flex';
+    
+    setTimeout(() => { status.innerText = 'Menghitung kecocokan jarak dan harga...'; }, 600);
+    setTimeout(() => { status.innerText = 'Menemukan hasil terbaik untuk Anda!'; }, 1200);
+    setTimeout(() => { form.submit(); }, 1800);
+});
 </script>
 @endpush

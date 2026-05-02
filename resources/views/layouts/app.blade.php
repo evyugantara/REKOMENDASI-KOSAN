@@ -8,17 +8,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            /* Black, White, Dark Blue Palette */
-            --bg-body: #f8fafc; /* Very light gray to distinguish from pure white cards */
+            /* CoreUI Palette */
+            --bg-body: #ebedef; /* CoreUI body background */
             --bg-white: #ffffff;
-            --border-color: #e2e8f0;
-            --text-main: #0f172a; /* Black/Very Dark Gray */
-            --text-muted: #64748b;
+            --border-color: #c8ced3;
+            --text-main: #3c4b64; /* CoreUI text */
+            --text-muted: #768192;
             
-            --primary: #285b8c; /* Matched with Admin Topbar */
-            --primary-hover: #1e456d;
-            --primary-light: #eff6ff;
+            --primary: #321fdb; /* CoreUI Blue */
+            --primary-hover: #2a1ab9;
+            --primary-light: #eaedfc;
             
+            --sidebar-bg: #3c4b64; /* CoreUI Sidebar */
             --black: #000000;
         }
         
@@ -26,7 +27,7 @@
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); line-height: 1.6; }
         
         /* Top Navigation */
-        .navbar { background-color: var(--primary); padding: 0 5%; height: 75px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .navbar { background-color: var(--sidebar-bg); padding: 0 5%; height: 75px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .nav-brand { font-size: 1.25rem; font-weight: 600; color: #ffffff; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; letter-spacing: 0.5px; }
         .nav-brand i { font-size: 1.8rem; }
         .nav-brand span { color: #93c5fd; font-weight: 400; }
@@ -128,10 +129,7 @@
         </a>
         
         <div class="nav-links">
-            <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">Beranda</a>
-            <a href="{{ route('kost.index') }}" class="nav-link {{ request()->routeIs('kost.index') ? 'active' : '' }}">Katalog Kost</a>
-            <a href="{{ route('rekomendasi.index') }}" class="nav-link {{ request()->routeIs('rekomendasi.*') ? 'active' : '' }}"><i class="fa-solid fa-wand-magic-sparkles"></i> Sistem Cerdas</a>
-
+            <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') || request()->routeIs('kost.index') ? 'active' : '' }}">Beranda</a>
         </div>
         
         <div class="nav-auth">
@@ -162,8 +160,8 @@
         @yield('content')
     </main>
     
-    <!-- FOOTER (DARK BLUE) -->
-    <footer class="footer">
+    <!-- FOOTER (DARK) -->
+    <footer class="footer" style="background-color: var(--sidebar-bg);">
         <strong>&copy; {{ date('Y') }} Sistem Rekomendasi Kost Universitas Suryakancana.</strong>
         Platform pencarian kost modern yang menggunakan Algoritma <i>Content-Based Filtering</i> & <i>Cosine Similarity</i>.
     </footer>

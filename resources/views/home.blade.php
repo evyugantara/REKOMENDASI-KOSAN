@@ -51,14 +51,22 @@
 }
 
 .kosania-search-box {
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(255,255,255,0.2);
     padding: 1.5rem;
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
     gap: 1rem;
+    transition: transform 0.3s ease;
+}
+.kosania-search-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12), inset 0 0 0 1px rgba(255,255,255,0.3);
 }
 
 .search-field {
@@ -254,6 +262,41 @@
     .hero-kosania { height: 400px; }
     .kosania-grid { grid-template-columns: 1fr; }
 }
+
+/* Pagination */
+.pagination { display:flex; gap:.4rem; justify-content:center; flex-wrap:wrap; margin-top:3rem; }
+.pagination a, .pagination span { padding:.5rem .85rem; border-radius:8px; font-size:.875rem; font-weight:500; text-decoration:none; }
+.pagination a { background:#FFFFFF; border:1px solid #E2E8F0; color:#475569; transition:all .2s; }
+.pagination a:hover { border-color:var(--primary); color:var(--primary); }
+.pagination span.active-page { background:var(--primary); color:#fff; border:1px solid var(--primary); }
+.pagination span.disabled { background:#FFFFFF; border:1px solid #E2E8F0; color:#E2E8F0; }
+
+/* Animations */
+@keyframes movingGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+.animated-gradient-bg {
+    background: linear-gradient(-45deg, var(--primary), var(--info), var(--primary-hover), #4F46E5);
+    background-size: 400% 400%;
+    animation: movingGradient 10s ease infinite;
+}
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(255,255,255, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(255,255,255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,255,255, 0); }
+}
+.btn-pulse {
+    animation: pulseGlow 2s infinite;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.hero-content h1 {
+    animation: fadeInUp 1s ease-out forwards;
+}
 </style>
 @endpush
 
@@ -262,7 +305,7 @@
 <!-- HERO SECTION -->
 <section class="hero-kosania">
     <div class="hero-content">
-        <h1>Lagi nyari kos kosan? <span>KostUNSUR</span> aja</h1>
+        <h1 style="font-size: 3.5rem;">Selamat Datang,<br><span>Mahasiswa UNSUR</span></h1>
     </div>
 </section>
 
@@ -309,17 +352,7 @@
     </form>
 </div>
 
-<!-- CTA SISTEM CERDAS -->
-<section style="max-width: 1200px; margin: 0 auto 4rem; padding: 0 1rem;">
-    <div style="background: linear-gradient(135deg, var(--primary), var(--primary-hover)); border-radius: 16px; padding: 3rem 2rem; text-align: center; color: #fff; box-shadow: 0 10px 30px rgba(40,91,140,0.2); position: relative; overflow: hidden;">
-        <i class="fa-solid fa-wand-magic-sparkles" style="font-size: 5rem; opacity: 0.1; position: absolute; right: 5%; top: 50%; transform: translateY(-50%);"></i>
-        <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.75rem; position: relative; z-index: 2;">Bingung Pilih Kost yang Pas?</h2>
-        <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; position: relative; z-index: 2;">Jangan buang waktu mencari satu-satu. Gunakan <b>Sistem Rekomendasi Cerdas</b> kami yang akan mencarikan kost terbaik berdasarkan budget, lokasi, dan fasilitas yang Anda butuhkan.</p>
-        <a href="{{ route('rekomendasi.index') }}" style="display: inline-block; background: #fff; color: var(--primary); padding: 1rem 2.5rem; border-radius: 50px; font-weight: 800; font-size: 1.1rem; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; position: relative; z-index: 2; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-            <i class="fa-solid fa-bolt" style="color: #f59e0b; margin-right: 0.5rem;"></i> Coba Sistem Cerdas Sekarang
-        </a>
-    </div>
-</section>
+
 
 <!-- KAMAR KOSAN SECTION -->
 <section class="rekomendasi-section">
@@ -345,11 +378,27 @@
         @endforeach
     </div>
     
-    <div style="text-align: center; margin-top: 3rem;">
-        <a href="{{ route('kost.index') }}" style="color: var(--primary); font-weight: 600; text-decoration: none; border: 2px solid var(--primary); padding: 0.75rem 2rem; border-radius: 50px; transition: all 0.2s; display: inline-block;">
-            Lihat Semua Kost
-        </a>
+    @if($kostTerbaru->hasPages())
+    <div class="pagination">
+        @if($kostTerbaru->onFirstPage())
+            <span class="disabled">← Prev</span>
+        @else
+            <a href="{{ $kostTerbaru->previousPageUrl() }}">← Prev</a>
+        @endif
+        @foreach($kostTerbaru->getUrlRange(1, $kostTerbaru->lastPage()) as $page => $url)
+            @if($page == $kostTerbaru->currentPage())
+                <span class="active-page">{{ $page }}</span>
+            @else
+                <a href="{{ $url }}">{{ $page }}</a>
+            @endif
+        @endforeach
+        @if($kostTerbaru->hasMorePages())
+            <a href="{{ $kostTerbaru->nextPageUrl() }}">Next →</a>
+        @else
+            <span class="disabled">Next →</span>
+        @endif
     </div>
+    @endif
 </section>
 
 @endsection

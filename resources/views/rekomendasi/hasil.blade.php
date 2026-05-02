@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('user.layout')
 @section('title', 'Hasil Rekomendasi Kost')
 @push('styles')
 <style>

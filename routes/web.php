@@ -14,12 +14,6 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/kost', [HomeController::class, 'cariKost'])->name('kost.index');
 Route::get('/kost/{kost}', [HomeController::class, 'detailKost'])->name('kost.detail');
 
-// Rekomendasi (Public)
-Route::get('/rekomendasi', [RekomendasiController::class, 'index'])->name('rekomendasi.index');
-Route::post('/rekomendasi/simpan', [RekomendasiController::class, 'simpanPreferensi'])->name('rekomendasi.simpan');
-Route::get('/rekomendasi/hasil', [RekomendasiController::class, 'hasil'])->name('rekomendasi.hasil');
-Route::post('/rekomendasi/api-hitung', [RekomendasiController::class, 'apiHitung'])->name('rekomendasi.api');
-
 // ==================== AUTH ROUTES ====================
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -36,6 +30,12 @@ Route::prefix('user')->name('user.')->middleware('auth')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    // Rekomendasi (Mahasiswa)
+    Route::get('/rekomendasi', [RekomendasiController::class, 'index'])->name('rekomendasi.index');
+    Route::post('/rekomendasi/simpan', [RekomendasiController::class, 'simpanPreferensi'])->name('rekomendasi.simpan');
+    Route::get('/rekomendasi/hasil', [RekomendasiController::class, 'hasil'])->name('rekomendasi.hasil');
+    Route::post('/rekomendasi/api-hitung', [RekomendasiController::class, 'apiHitung'])->name('rekomendasi.api');
+
     // Ulasan
     Route::post('/kost/{kost}/ulasan', [UlasanController::class, 'store'])->name('ulasan.store');
     Route::delete('/ulasan/{ulasan}', [UlasanController::class, 'destroy'])->name('ulasan.destroy');

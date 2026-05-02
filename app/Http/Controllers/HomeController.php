@@ -14,7 +14,7 @@ class HomeController extends Controller
 
     public function index(Request $request)
     {
-        $kostTerbaru = Kost::active()->orderBy('created_at', 'desc')->limit(4)->get();
+        $kostTerbaru = Kost::active()->orderBy('created_at', 'desc')->paginate(12);
         return view('home', compact('kostTerbaru'));
     }
 
